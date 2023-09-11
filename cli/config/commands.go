@@ -21,8 +21,7 @@ func GetCommand() *cli.Command {
 				Usage: "Initialize configuration",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:     "server-url",
-						Aliases:  []string{"url"},
+						Name:     "url",
 						Usage:    "url of the reef server",
 						Required: true,
 					},
