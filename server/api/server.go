@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/superfishial/reef/server/auth"
 	"github.com/superfishial/reef/server/config"
 	"github.com/superfishial/reef/server/coral"
@@ -29,7 +30,7 @@ func StartServer(conf config.Config) {
 	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
+		return c.SendString(":)")
 	})
 
 	app.Route("/v1", func(v1 fiber.Router) {
