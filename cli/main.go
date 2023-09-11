@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 
 	"github.com/superfishial/reef/cli/auth"
 	"github.com/superfishial/reef/cli/config"
-	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{DisableLevelTruncation: true, DisableTimestamp: true})
+
 	conf, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
