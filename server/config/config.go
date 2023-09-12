@@ -45,6 +45,8 @@ type S3Config struct {
 	ForcePathStyle bool   `koanf:"forcePathStyle"`
 }
 
+// TODO: Should error if can't values for required values like
+// JwtSecret, CookieEncryptionSecret, etc.
 func LoadConfig() (Config, error) {
 	// Default -> Yaml -> Env
 	k.Load(confmap.Provider(map[string]interface{}{
@@ -59,7 +61,7 @@ func LoadConfig() (Config, error) {
 			"forcePathStyle": false,
 		},
 	}, "."), nil)
-	k.Load(file.Provider("server/config.yaml"), yaml.Parser())
+	k.Load(file.Provider("config.yaml"), yaml.Parser())
 	k.Load(env.Provider("REEF_", ".", func(s string) string {
 		return strings.Replace(strings.ToLower(
 			strings.TrimPrefix(s, "REEF_")), "_", ".", -1)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/superfishial/reef/cli/auth"
 	"github.com/superfishial/reef/cli/config"
+	"github.com/superfishial/reef/cli/coral"
 )
 
 func main() {
@@ -26,14 +27,7 @@ func main() {
 		Commands: []*cli.Command{
 			auth.GetCommand(conf),
 			config.GetCommand(),
-			{
-				Name:  "get",
-				Usage: "Get a file",
-				Action: func(c *cli.Context) error {
-					fmt.Println("getting file: ", c.Args().First())
-					return nil
-				},
-			},
+			coral.GetCommand(conf),
 			{
 				Name:  "list",
 				Usage: "List files",

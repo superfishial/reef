@@ -21,6 +21,7 @@ type Config struct {
 }
 
 type ServerConfig struct {
+	// TODO: Make this a URL
 	RootURL string `koanf:"rootURL"`
 }
 

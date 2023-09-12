@@ -2,10 +2,9 @@ package api
 
 import (
 	"errors"
-	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
+	log "github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/golang-jwt/jwt/v5"
@@ -29,19 +28,18 @@ func StartServer(conf config.Config) {
 		Key: conf.Server.CookieEncryptionSecret,
 	}))
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString(":)")
-	})
-
 	app.Route("/v1", func(v1 fiber.Router) {
+		// Authentication routes
 		v1.Route("/auth", func(authR fiber.Router) {
 			authR.Get("/login", auth.LoginHandler(conf))
 			authR.Get("/callback", auth.CallbackHandler(conf))
 			authR.Get("/sign", auth.SignHandler(conf.Server))
 		}, "auth.")
 
+		// Config routes
 		v1.Get("/config/cli", config.CLIConfigHandler(conf))
 
+		// Coral (file) routes
 		v1.Delete("/coral/:filename", auth.MiddlewareHandler(conf.Server, true), func(c *fiber.Ctx) error {
 			err := coral.DeleteFile(conf.S3, c.Params("filename"))
 			if err != nil {
@@ -71,15 +69,16 @@ func StartServer(conf config.Config) {
 		})
 
 		v1.Get("/coral/:filename", auth.MiddlewareHandler(conf.Server, false), func(c *fiber.Ctx) error {
-			metadata, err := coral.GetFileMetadata(conf.S3, c.Params("filename"))
+			_, err := coral.GetFileMetadata(conf.S3, c.Params("filename"))
+			// TODO: Handle 404s
+			// TODO: Check if the user has access to read file
 			if err != nil {
-				return fiber.ErrInternalServerError
+				return errors.Join(fiber.ErrInternalServerError, err)
 			}
-			fmt.Println(metadata, err)
 
 			stream, err := coral.DownloadFile(conf.S3, c.Params("filename"))
 			if err != nil {
-				return fiber.ErrInternalServerError
+				return errors.Join(fiber.ErrInternalServerError, err)
 			}
 			return c.SendStream(stream)
 		})

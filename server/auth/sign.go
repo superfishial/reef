@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
+
 	"github.com/superfishial/reef/server/config"
 )
 
@@ -18,7 +19,7 @@ func SignHandler(conf config.ServerConfig) func(c *fiber.Ctx) error {
 			return errors.Join(fiber.ErrInternalServerError, err)
 		}
 
-		token, err := SignToken(accessToken, userInfo)
+		token, err := SignToken(conf.JwtSecret, userInfo)
 		if err != nil {
 			return errors.Join(fiber.ErrInternalServerError, err)
 		}

@@ -2,25 +2,35 @@ package auth
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/superfishial/reef/server/config"
 )
 
-func MiddlewareHandler(conf config.ServerConfig, requireCookie bool) func(c *fiber.Ctx) error {
+func MiddlewareHandler(conf config.ServerConfig, requireAuth bool) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		// Check if user is already authenticated
-		cookie := c.Cookies(conf.AuthCookieName)
-		if cookie == "" {
-			if requireCookie {
-				return fiber.NewError(fiber.StatusUnauthorized, "no token found in cookie")
+		headerOrCookie := c.Cookies(conf.AuthCookieName)
+		if headerOrCookie == "" {
+			re := regexp.MustCompile(`Bearer (.*)`)
+			headerOrCookie = re.FindStringSubmatch(c.Get("Authorization"))[1]
+		}
+		if headerOrCookie == "" {
+			if requireAuth {
+				return fiber.NewError(fiber.StatusUnauthorized, fmt.Sprintf("no token found in cookie '%s' or Authorization header in the form Bearer <token>", conf.AuthCookieName))
 			}
-			return nil
+			return c.Next()
 		}
 
 		// Verify JWT token
-		token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(headerOrCookie, func(token *jwt.Token) (interface{}, error) {
+			if token.Method.Alg() != "HS256" {
+				return nil, errors.New("invalid signing algorithm")
+			}
 			return []byte(conf.JwtSecret), nil
 		})
 		if err != nil {
