@@ -17,7 +17,10 @@ func MiddlewareHandler(conf config.ServerConfig, requireAuth bool) func(c *fiber
 		headerOrCookie := c.Cookies(conf.AuthCookieName)
 		if headerOrCookie == "" {
 			re := regexp.MustCompile(`Bearer (.*)`)
-			headerOrCookie = re.FindStringSubmatch(c.Get("Authorization"))[1]
+			matches := re.FindStringSubmatch(c.Get("Authorization"))
+			if len(matches) > 1 {
+				headerOrCookie = matches[1]
+			}
 		}
 		if headerOrCookie == "" {
 			if requireAuth {
